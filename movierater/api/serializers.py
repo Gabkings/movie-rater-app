@@ -4,15 +4,26 @@ from .models import  Movie, Rating
 from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.response import Response
+from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model= User
+        fields = ('id','username', 'password',)
+        extra_kwargs = {'password': {'write_only': True, 'required': True}}
+
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        Token.objects.create(user=user)
+        return {'user': user} 
+
+
 class MovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
-        fields = ('id','title','description',)
-    @action(detail=True, methods=['POST'])
-    def rate_movie(self,request, pk=None):
-        responce = {'message': 'It is working'}
-
-        return Response(responce, status=status.HTTP_200_OK)
+        fields = ('id','title','description','no_of_rating','rating_averange')
 
 class RatingSerializer(serializers.ModelSerializer):
     class Meta:
